@@ -98,4 +98,122 @@ export async function logoutUser(): Promise<{ message: string }> {
   return data;
 }
 
+// ── Device API ────────────────────────────────────────────────────────────
+
+import type {
+  DeviceListResponse,
+  DeviceDetailResponse,
+  DeviceConfig,
+  DeviceQueryParams,
+  UpdateDevicePayload,
+  BatchTransactionListResponse,
+  TelemetryTransactionListResponse,
+  BatchQueryParams,
+  TelemetryQueryParams,
+} from "@/types/device";
+
+/**
+ * GET /api/devices
+ * Returns a paginated list of all registered devices with their config summary.
+ */
+export async function getDevices(params?: DeviceQueryParams): Promise<DeviceListResponse> {
+  const { data } = await apiClient.get<DeviceListResponse>("/api/devices", { params });
+  return data;
+}
+
+/**
+ * GET /api/devices/:deviceId
+ * Returns full device details including complete config and recent transactions.
+ */
+export async function getDevice(deviceId: string): Promise<DeviceDetailResponse> {
+  const { data } = await apiClient.get<DeviceDetailResponse>(`/api/devices/${deviceId}`);
+  return data;
+}
+
+/**
+ * GET /api/devices/:deviceId/config
+ * Returns only the DeviceConfig row for a device.
+ */
+export async function getDeviceConfig(deviceId: string): Promise<DeviceConfig> {
+  const { data } = await apiClient.get<DeviceConfig>(`/api/devices/${deviceId}/config`);
+  return data;
+}
+
+/**
+ * PATCH /api/devices/:deviceId
+ * Partial update of device metadata and/or config.
+ */
+export async function updateDevice(
+  deviceId: string,
+  payload: UpdateDevicePayload
+): Promise<{ success: boolean; deviceId: string; updatedAt: string }> {
+  const { data } = await apiClient.patch(`/api/devices/${deviceId}`, payload);
+  return data;
+}
+
+/**
+ * PATCH /api/devices/:deviceId/toggle
+ * Flips isActive between true and false.
+ */
+export async function toggleDevice(
+  deviceId: string
+): Promise<{ success: boolean; deviceId: string; isActive: boolean }> {
+  const { data } = await apiClient.patch(`/api/devices/${deviceId}/toggle`);
+  return data;
+}
+
+// ── Transaction API ───────────────────────────────────────────────────────
+
+/**
+ * GET /api/transaction/batch
+ * Returns paginated batch transactions with optional filters.
+ */
+export async function getBatchTransactions(
+  params?: BatchQueryParams
+): Promise<BatchTransactionListResponse> {
+  const { data } = await apiClient.get<BatchTransactionListResponse>("/api/transaction/batch", { params });
+  return data;
+}
+
+/**
+ * GET /api/transaction/telemetry
+ * Returns paginated telemetry transactions with optional filters.
+ */
+export async function getTelemetryTransactions(
+  params?: TelemetryQueryParams
+): Promise<TelemetryTransactionListResponse> {
+  const { data } = await apiClient.get<TelemetryTransactionListResponse>("/api/transaction/telemetry", { params });
+  return data;
+}
+
+/**
+ * GET /api/transaction/batch/device/:deviceId
+ * Returns all batch transactions for a given device serial number (paginated).
+ */
+export async function getDeviceBatchTransactions(
+  deviceId: string,
+  params?: Omit<BatchQueryParams, "deviceSerialNumber">
+): Promise<BatchTransactionListResponse> {
+  const { data } = await apiClient.get<BatchTransactionListResponse>(
+    `/api/transaction/batch/device/${deviceId}`,
+    { params }
+  );
+  return data;
+}
+
+/**
+ * GET /api/transaction/telemetry/device/:deviceId
+ * Returns all telemetry events for a device (paginated).
+ */
+export async function getDeviceTelemetryTransactions(
+  deviceId: string,
+  params?: Omit<TelemetryQueryParams, "deviceSerialNumber">
+): Promise<TelemetryTransactionListResponse> {
+  const { data } = await apiClient.get<TelemetryTransactionListResponse>(
+    `/api/transaction/telemetry/device/${deviceId}`,
+    { params }
+  );
+  return data;
+}
+
 export default apiClient;

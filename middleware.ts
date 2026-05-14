@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 
   // Define public and protected routes
   const isAuthPage = pathname.startsWith("/login") || pathname.startsWith("/signup");
-  const isProtectedRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/setup");
+  const isProtectedRoute = pathname.startsWith("/dashboard");
 
   // 1. Root redirect logic
   if (pathname === "/") {
@@ -18,10 +18,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Protect dashboard & setup routes
+  // 2. Protect dashboard routes
   if (isProtectedRoute && !token) {
     const loginUrl = new URL("/login", request.url);
-    // You can also add a ?callbackUrl query parameter here if you want to redirect back after login
     return NextResponse.redirect(loginUrl);
   }
 
@@ -39,8 +38,8 @@ export const config = {
   matcher: [
     "/",
     "/dashboard/:path*",
-    "/setup/:path*",
     "/login",
     "/signup",
   ],
 };
+
