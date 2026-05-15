@@ -44,6 +44,7 @@ import {
   getBatchTransactions,
   getTelemetryTransactions,
 } from "@/lib/api"
+import { getUser } from "@/lib/auth"
 
 interface Metrics {
   totalDevices: number
@@ -64,9 +65,21 @@ export default function OverviewPage() {
   const [metrics, setMetrics] = React.useState<Metrics | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [timeline, setTimeline] = React.useState<TimelinePoint[]>([])
+  const [user, setUser] = React.useState<{ name: string; role: string } | null>(null)
 
   React.useEffect(() => {
+    const u = getUser()
+    if (u) {
+      setUser({ name: u.name, role: u.role })
+    }
+
     async function fetchMetrics() {
+      // If user is not super, we don't need to fetch these metrics
+      if (u && u.role !== "SUPER") {
+        setLoading(false)
+        return
+      }
+
       try {
         const [allDevices, activeDevices, batchTx, telemetryTx, batchRecent, telemetryRecent] =
           await Promise.allSettled([
@@ -177,6 +190,18 @@ export default function OverviewPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+    )
+  }
+
+  if (user && user.role !== "SUPER") {
+    const roleName = user.role === "MNGR" ? "Manager" : user.role === "OPER" ? "Operator" : user.role === "ENGR" ? "Engineer" : "User"
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 py-8 px-4 text-center">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome, {roleName}</h1>
+        <p className="text-lg text-muted-foreground max-w-[500px]">
+          Your personalized dashboard is coming soon.
+        </p>
       </div>
     )
   }

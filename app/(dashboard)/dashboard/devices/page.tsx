@@ -30,11 +30,11 @@ const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
 
 const DEVICE_TYPE_STYLES: Record<DeviceType, string> = {
   BATCH_CONTROLLER:
-    "bg-teal-50 text-teal-700 border border-teal-200/60 ring-0",
+    "bg-teal-50 text-teal-700 border border-teal-200/60 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700/50",
   TELEMETRY:
-    "bg-sky-50 text-sky-700 border border-sky-200/60 ring-0",
+    "bg-sky-50 text-sky-700 border border-sky-200/60 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700/50",
   WATER_ATM:
-    "bg-violet-50 text-violet-700 border border-violet-200/60 ring-0",
+    "bg-violet-50 text-violet-700 border border-violet-200/60 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-700/50",
 }
 
 const FILTER_OPTIONS: { label: string; value: DeviceType | "ALL" }[] = [
@@ -97,12 +97,12 @@ export default function DevicesPage() {
             placeholder="Search devices..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 bg-white/80 border-black/[0.07] shadow-none text-sm rounded-lg placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-teal-500/30 focus-visible:border-teal-400/60"
+            className="pl-9 h-9 bg-white/80 dark:bg-white/5 border-black/[0.07] dark:border-white/10 shadow-none text-sm rounded-lg placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-teal-500/30 focus-visible:border-teal-400/60"
           />
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-black/[0.03] border border-black/[0.05]">
+        <div className="flex items-center gap-1.5 p-1 rounded-lg bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.05] dark:border-white/[0.07]">
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -112,8 +112,8 @@ export default function DevicesPage() {
               }}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-150 ${
                 typeFilter === opt.value
-                  ? "bg-white text-teal-700 shadow-sm border border-black/[0.06]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/60"
+                  ? "bg-white dark:bg-white/10 text-teal-700 dark:text-teal-300 shadow-sm border border-black/[0.06] dark:border-white/[0.08]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-white/[0.06]"
               }`}
             >
               {opt.label}
@@ -124,12 +124,10 @@ export default function DevicesPage() {
 
       {/* Table Container */}
       <div className="px-4 lg:px-6">
-        <div
-          className="rounded-xl border border-black/[0.06] bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.03)] overflow-hidden"
-        >
+        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.07] bg-white dark:bg-card shadow-[0_1px_4px_rgba(0,0,0,0.04),0_4px_16px_rgba(0,0,0,0.03)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)] overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-b border-black/[0.05] bg-[#f8faf9] hover:bg-[#f8faf9]">
+              <TableRow className="border-b border-black/[0.05] dark:border-white/[0.06] bg-[#f8faf9] dark:bg-white/[0.03] hover:bg-[#f8faf9] dark:hover:bg-white/[0.03]">
                 <TableHead className="pl-5 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 w-[60px]">
                   Status
                 </TableHead>
@@ -156,7 +154,7 @@ export default function DevicesPage() {
             <TableBody>
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <TableRow key={i} className="border-b border-black/[0.04]">
+                  <TableRow key={i} className="border-b border-black/[0.04] dark:border-white/[0.05]">
                     <TableCell className="pl-5 py-2.5">
                       <Skeleton className="size-2.5 rounded-full" />
                     </TableCell>
@@ -182,10 +180,7 @@ export default function DevicesPage() {
                 ))
               ) : filteredDevices.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="py-16 text-center"
-                  >
+                  <TableCell colSpan={7} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <MonitorSmartphoneIcon className="size-8 text-muted-foreground/30" />
                       <p className="text-sm text-muted-foreground/60">No devices found</p>
@@ -196,8 +191,10 @@ export default function DevicesPage() {
                 filteredDevices.map((device, idx) => (
                   <TableRow
                     key={device.id}
-                    className={`group border-b border-black/[0.04] cursor-pointer transition-colors duration-100 hover:bg-teal-50/40 last:border-0 ${
-                      idx % 2 === 1 ? "bg-black/[0.008]" : "bg-white"
+                    className={`group border-b border-black/[0.04] dark:border-white/[0.05] cursor-pointer transition-colors duration-100 hover:bg-teal-50/40 dark:hover:bg-teal-950/30 last:border-0 ${
+                      idx % 2 === 1
+                        ? "bg-black/[0.008] dark:bg-white/[0.015]"
+                        : "bg-white dark:bg-transparent"
                     }`}
                   >
                     {/* Status dot */}
@@ -211,7 +208,7 @@ export default function DevicesPage() {
                             className={`relative inline-flex rounded-full size-2.5 ${
                               device.isActive
                                 ? "bg-emerald-500 shadow-[0_0_7px_2px_rgba(16,185,129,0.35)]"
-                                : "bg-slate-300"
+                                : "bg-red-400 shadow-[0_0_7px_2px_rgba(248,113,113,0.35)]"
                             }`}
                           />
                         </span>
@@ -221,7 +218,7 @@ export default function DevicesPage() {
                     {/* Device name */}
                     <TableCell className="py-2.5">
                       <Link href={`/dashboard/devices/${device.deviceId}`} className="block">
-                        <p className="text-sm font-semibold text-foreground group-hover:text-teal-700 transition-colors">
+                        <p className="text-sm font-semibold text-foreground group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                           {device.name || "Unnamed Device"}
                         </p>
                       </Link>
@@ -230,7 +227,7 @@ export default function DevicesPage() {
                     {/* Serial number */}
                     <TableCell className="py-2.5">
                       <Link href={`/dashboard/devices/${device.deviceId}`}>
-                        <code className="text-[11px] font-mono text-muted-foreground/60 bg-black/[0.03] px-1.5 py-0.5 rounded">
+                        <code className="text-[11px] font-mono text-muted-foreground/60 bg-black/[0.03] dark:bg-white/[0.06] px-1.5 py-0.5 rounded">
                           {device.deviceId}
                         </code>
                       </Link>
@@ -241,7 +238,8 @@ export default function DevicesPage() {
                       <Link href={`/dashboard/devices/${device.deviceId}`}>
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium tracking-tight ${
-                            DEVICE_TYPE_STYLES[device.deviceType] ?? "bg-gray-50 text-gray-600 border border-gray-200/60"
+                            DEVICE_TYPE_STYLES[device.deviceType] ??
+                            "bg-gray-50 text-gray-600 border border-gray-200/60 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-600/50"
                           }`}
                         >
                           {DEVICE_TYPE_LABELS[device.deviceType] || device.deviceType}
@@ -297,7 +295,7 @@ export default function DevicesPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-7 rounded-md border-black/[0.08] bg-white shadow-none hover:bg-black/[0.03]"
+                className="size-7 rounded-md border-black/[0.08] dark:border-white/[0.10] bg-white dark:bg-white/[0.04] shadow-none hover:bg-black/[0.03] dark:hover:bg-white/[0.08]"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
               >
@@ -309,7 +307,7 @@ export default function DevicesPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="size-7 rounded-md border-black/[0.08] bg-white shadow-none hover:bg-black/[0.03]"
+                className="size-7 rounded-md border-black/[0.08] dark:border-white/[0.10] bg-white dark:bg-white/[0.04] shadow-none hover:bg-black/[0.03] dark:hover:bg-white/[0.08]"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
               >
