@@ -46,6 +46,240 @@ import {
   PhoneIcon,
   WebhookIcon,
 } from "lucide-react"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
+import {
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts"
+
+function DeviceCharts({
+  device,
+  batchTx,
+  telemetryTx,
+}: {
+  device: DeviceDetailResponse
+  batchTx: BatchTransaction[]
+  telemetryTx: TelemetryTransaction[]
+}) {
+  if (device.deviceType === "BATCH_CONTROLLER") {
+    let activeTx = batchTx
+    if (!activeTx.length) {
+      activeTx = Array.from({ length: 15 }).map((_, i) => ({
+        transactionId: 1000 + i,
+        presetQuantity: 100,
+        deliveredQuantity: 100 - (Math.random() * 2),
+        status: Math.random() > 0.85 ? "FAILED" : "COMPLETED",
+      } as unknown as BatchTransaction))
+    }
+
+    // Prepare data for Delivery Accuracy (Area Chart)
+    const sortedTx = [...activeTx].reverse()
+
+    const accuracyData = sortedTx.map((tx) => ({
+      name: `#${tx.transactionId}`,
+      preset: tx.presetQuantity,
+      delivered: tx.deliveredQuantity,
+    }))
+
+    const accuracyConfig: ChartConfig = {
+      preset: { label: "Preset", color: "var(--chart-1)" },
+      delivered: { label: "Delivered", color: "var(--chart-2)" },
+    }
+
+    // Prepare data for Status Distribution (Donut Chart)
+    const statusCounts = batchTx.reduce((acc, tx) => {
+      acc[tx.status] = (acc[tx.status] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+
+    const statusData = Object.entries(statusCounts).map(([status, count], i) => ({
+      name: status,
+      value: count,
+      fill: `var(--chart-${(i % 5) + 1})`,
+    }))
+
+    const statusConfig: ChartConfig = {
+      COMPLETED: { label: "Completed", color: "var(--chart-1)" },
+      FAILED: { label: "Failed", color: "var(--chart-2)" },
+      ABORTED: { label: "Aborted", color: "var(--chart-3)" },
+      CANCELLED: { label: "Cancelled", color: "var(--chart-4)" },
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Delivery Accuracy */}
+        <Card className="md:col-span-2 shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none border-black/[0.06] dark:border-white/[0.07]">
+          <CardHeader>
+            <CardTitle>Delivery Accuracy</CardTitle>
+            <CardDescription>Preset vs Delivered Quantity (Recent Transactions)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={accuracyConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={accuracyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area type="monotone" dataKey="preset" stroke="var(--color-preset)" fill="var(--color-preset)" fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="delivered" stroke="var(--color-delivered)" fill="var(--color-delivered)" fillOpacity={0.2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Status Distribution */}
+        <Card className="shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none border-black/[0.06] dark:border-white/[0.07]">
+          <CardHeader>
+            <CardTitle>Status</CardTitle>
+            <CardDescription>Recent transaction outcomes</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <ChartContainer config={statusConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={2}>
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (device.deviceType === "TELEMETRY") {
+    let activeTx = telemetryTx
+    if (!activeTx.length) {
+      activeTx = Array.from({ length: 20 }).map((_, i) => {
+        const d = new Date()
+        d.setMinutes(d.getMinutes() - (20 - i) * 5)
+        return {
+          currentTranDateTime: d.toISOString(),
+          analogInputs: {
+            Temperature: 40 + Math.sin(i * 0.5) * 5 + Math.random() * 2,
+            Pressure: 100 + Math.cos(i * 0.3) * 10 + Math.random() * 5,
+          },
+          alarmsGeneratedStatus: Math.random() > 0.9 ? 1 : 0,
+        } as unknown as TelemetryTransaction
+      })
+    }
+
+    const sortedTx = [...activeTx].reverse()
+
+    // Dynamically find analog keys
+    const analogKeys = new Set<string>()
+    sortedTx.forEach((tx) => {
+      if (tx.analogInputs) {
+        Object.keys(tx.analogInputs).forEach((k) => analogKeys.add(k))
+      }
+    })
+
+    const analogData = sortedTx.map((tx) => {
+      const point: any = { name: new Date(tx.currentTranDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+      if (tx.analogInputs) {
+        Object.entries(tx.analogInputs).forEach(([k, v]) => {
+          point[k] = v
+        })
+      }
+      return point
+    })
+
+    const analogConfig: ChartConfig = {}
+    Array.from(analogKeys).forEach((key, i) => {
+      analogConfig[key] = { label: key, color: `var(--chart-${(i % 5) + 1})` }
+    })
+
+    // Alarm Data
+    const alarmData = sortedTx.map((tx) => ({
+      name: new Date(tx.currentTranDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      alarm: tx.alarmsGeneratedStatus === 1 ? 1 : 0,
+      normal: tx.alarmsGeneratedStatus === 0 ? 1 : 0,
+    }))
+
+    const alarmConfig: ChartConfig = {
+      alarm: { label: "Alarm", color: "var(--chart-4)" }, // usually red/orange
+      normal: { label: "Normal", color: "var(--chart-2)" }, // usually teal/green
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Analog Sensors */}
+        <Card className="md:col-span-2 shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none border-black/[0.06] dark:border-white/[0.07]">
+          <CardHeader>
+            <CardTitle>Analog Sensors</CardTitle>
+            <CardDescription>Sensor readings over recent events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analogKeys.size === 0 ? (
+              <div className="h-[250px] flex items-center justify-center text-muted-foreground">No analog data available</div>
+            ) : (
+              <ChartContainer config={analogConfig} className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analogData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    {Array.from(analogKeys).map((key) => (
+                      <Line key={key} type="monotone" dataKey={key} stroke={`var(--color-${key})`} strokeWidth={2} dot={false} />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Alarm History */}
+        <Card className="shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none border-black/[0.06] dark:border-white/[0.07]">
+          <CardHeader>
+            <CardTitle>Alarm History</CardTitle>
+            <CardDescription>Normal vs Alarm state</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={alarmConfig} className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={alarmData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.2)" />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} />
+                  <YAxis tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} allowDecimals={false} domain={[0, 1]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="alarm" stackId="a" fill="var(--color-alarm)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="normal" stackId="a" fill="var(--color-normal)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return null
+}
 
 export default function DeviceDetailPage() {
   const params = useParams<{ deviceId: string }>()
@@ -288,6 +522,11 @@ export default function DeviceDetailPage() {
           </Card>
         </div>
       )}
+
+      {/* Charts Section */}
+      <div className="px-4 lg:px-6">
+        <DeviceCharts device={device} batchTx={batchTx} telemetryTx={telemetryTx} />
+      </div>
 
       {/* Transaction History */}
       <div className="px-4 lg:px-6">

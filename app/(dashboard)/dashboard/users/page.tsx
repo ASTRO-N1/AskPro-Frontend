@@ -180,7 +180,7 @@ export default function CreateUserPage() {
   )
 
   return (
-    <div className="flex flex-col gap-8 py-6 md:py-8 px-4 lg:px-6 max-w-2xl">
+    <div className="flex flex-col gap-8 py-6 md:py-8 px-4 lg:px-6 w-full">
       {/* Page header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
@@ -204,71 +204,73 @@ export default function CreateUserPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {/* Personal details card */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.07] bg-white dark:bg-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-black/[0.05] dark:border-white/[0.06] bg-[#f8faf9] dark:bg-white/[0.03]">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground/90 dark:text-zinc-200">
-              Account Details
-            </h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Personal details card */}
+          <div className="flex flex-col h-full rounded-xl border border-black/[0.06] dark:border-white/[0.07] bg-white dark:bg-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-black/[0.05] dark:border-white/[0.06] bg-[#f8faf9] dark:bg-white/[0.03]">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground/90 dark:text-zinc-200">
+                Account Details
+              </h2>
+            </div>
+            <div className="p-5 flex flex-col gap-4 flex-1">
+              {field("name", "Full Name", "text", "e.g. Ravi Sharma")}
+              {field("email", "Email Address", "email", "e.g. ravi@company.com")}
+              {field("mobile", "Mobile Number", "tel", "e.g. +919876543210", "Include country code, 10–15 digits")}
+              {field("password", "Password", "password", "Min. 8 characters")}
+            </div>
           </div>
-          <div className="p-5 flex flex-col gap-4">
-            {field("name", "Full Name", "text", "e.g. Ravi Sharma")}
-            {field("email", "Email Address", "email", "e.g. ravi@company.com")}
-            {field("mobile", "Mobile Number", "tel", "e.g. +919876543210", "Include country code, 10–15 digits")}
-            {field("password", "Password", "password", "Min. 8 characters")}
-          </div>
-        </div>
 
-        {/* Role picker card */}
-        <div className="rounded-xl border border-black/[0.06] dark:border-white/[0.07] bg-white dark:bg-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-black/[0.05] dark:border-white/[0.06] bg-[#f8faf9] dark:bg-white/[0.03]">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground/90 dark:text-zinc-200">
-              User Role
-            </h2>
-          </div>
-          <div className="p-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            {ROLES.map((role) => {
-              const isSelected = form.role === role.value
-              return (
-                <button
-                  key={role.value}
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, role: role.value }))}
-                  className={`relative flex items-start gap-3 rounded-xl border-2 p-3.5 text-left transition-all duration-150 cursor-pointer ${
-                    isSelected
-                      ? `${role.lightBorder} ${role.darkBorder} ${role.lightBg} ${role.darkBg} shadow-sm`
-                      : "border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-white/[0.03] hover:bg-black/[0.015] dark:hover:bg-white/[0.06] hover:border-black/[0.10] dark:hover:border-white/[0.14]"
-                  }`}
-                >
-                  <div className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg ${
-                    isSelected
-                      ? `${role.lightBg} ${role.darkBg} ${role.lightColor} ${role.darkColor}`
-                      : "bg-black/[0.04] dark:bg-white/[0.07] text-muted-foreground/60"
-                  }`}>
-                    {role.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold ${
-                      isSelected ? `${role.lightColor} ${role.darkColor}` : "text-foreground"
+          {/* Role picker card */}
+          <div className="flex flex-col h-full rounded-xl border border-black/[0.06] dark:border-white/[0.07] bg-white dark:bg-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] dark:shadow-none overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-black/[0.05] dark:border-white/[0.06] bg-[#f8faf9] dark:bg-white/[0.03]">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground/90 dark:text-zinc-200">
+                User Role
+              </h2>
+            </div>
+            <div className="p-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 flex-1 content-start">
+              {ROLES.map((role) => {
+                const isSelected = form.role === role.value
+                return (
+                  <button
+                    key={role.value}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, role: role.value }))}
+                    className={`relative flex items-start gap-3 rounded-xl border-2 p-3.5 text-left transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? `${role.lightBorder} ${role.darkBorder} ${role.lightBg} ${role.darkBg} shadow-sm`
+                        : "border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-white/[0.03] hover:bg-black/[0.015] dark:hover:bg-white/[0.06] hover:border-black/[0.10] dark:hover:border-white/[0.14]"
+                    }`}
+                  >
+                    <div className={`mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg ${
+                      isSelected
+                        ? `${role.lightBg} ${role.darkBg} ${role.lightColor} ${role.darkColor}`
+                        : "bg-black/[0.04] dark:bg-white/[0.07] text-muted-foreground/60"
                     }`}>
-                      {role.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
-                      {role.description}
-                    </p>
-                  </div>
-                  {isSelected && (
-                    <div className={`absolute top-2.5 right-2.5 size-2.5 rounded-full ${role.lightBg} ${role.darkBg} border-2 ${role.lightBorder} ${role.darkBorder}`} />
-                  )}
-                </button>
-              )
-            })}
+                      {role.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${
+                        isSelected ? `${role.lightColor} ${role.darkColor}` : "text-foreground"
+                      }`}>
+                        {role.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
+                        {role.description}
+                      </p>
+                    </div>
+                    {isSelected && (
+                      <div className={`absolute top-2.5 right-2.5 size-2.5 rounded-full ${role.lightBg} ${role.darkBg} border-2 ${role.lightBorder} ${role.darkBorder}`} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
         {/* Submit */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-3 pt-2">
           <button
             type="submit"
             disabled={loading}
